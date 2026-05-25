@@ -95,6 +95,30 @@ Daftar fungsionalitas baru untuk memperluas jangkauan penggunaan aplikasi McdWal
     *   Menampilkan *background banner / silent local notification* ketika transaksi berhasil diimpor otomatis ke e-wallet terkait di McdWallet.
 *   **Kompleksitas**: Sedang (Medium)
 
+### [x] Kalkulator Konversi Valas Terintegrasi (*Forex Converter Calculator*)
+*   **Status**: **SELESAI (v1.0.0)**
+*   **Deskripsi**: Pengguna dapat mengetuk salah satu kartu kurs asing pada dasbor utama untuk membuka modal konverter cepat secara instan.
+*   **Hasil Implementasi**:
+    *   **Konversi Reaktif Dua Arah**: Field input valas asing dan IDR sinkron secara dinamis secara *real-time* saat pengguna mengetik angka di salah satu kolom.
+    *   **Preset Konversi Cepat**: Menyediakan tombol pintas nilai preset populer (seperti +10, +50, +100, +500, +1.000 untuk valas, serta Rp50K, Rp100K, Rp500K, Rp1jt untuk IDR) guna memudahkan perhitungan cepat.
+    *   **100% Offline-Safe**: Menggunakan data cache lokal terakhir yang tersimpan di `SharedPreferences` sehingga kalkulasi berjalan instan tanpa bergantung koneksi internet.
+    *   **Antarmuka Keyboard-Safe**: Lembar modal bottom sheet yang didesain secara adaptif dengan `AnimatedPadding` dan `SingleChildScrollView` untuk memastikan 0% bug keyboard overlap.
+*   **Kompleksitas**: Rendah (Low)
+
+### [ ] Manajemen Dompet Multi-Mata Uang (*Multi-Currency Wallet*)
+*   **Deskripsi**: Memperluas sistem multi-dompet aplikasi agar mendukung saldo dalam mata uang asing (misalnya saldo USD di Wise, cash SGD, dll.).
+*   **Strategi Implementasi**:
+    *   Menambahkan kolom `currency_code` (default 'IDR') pada skema tabel dompet di basis data Supabase.
+    *   Mengintegrasikan kalkulasi reaktif di dasbor utama di mana saldo dompet ber-valas asing otomatis dikonversi ke IDR menggunakan nilai kurs terupdate untuk menghitung total kekayaan bersih secara real-time.
+*   **Kompleksitas**: Sedang (Medium)
+
+### [ ] Alarm Notifikasi Target Kurs (*Forex Price Alert*)
+*   **Deskripsi**: Layanan alarm reaktif di mana pengguna dapat menentukan ambang batas target nilai kurs mata uang asing tertentu.
+*   **Strategi Implementasi**:
+    *   Menambahkan antarmuka bagi pengguna untuk mendaftarkan target alarm (misal: alarm ketika USD turun di bawah Rp16.000 atau JPY turun di bawah Rp98).
+    *   Mengecek kondisi target harga saat proses auto-sync latar belakang berjalan setiap 1 jam, dan memicu notifikasi lokal reaktif di bilah status bar jika target terlampaui.
+*   **Kompleksitas**: Sedang (Medium)
+
 ---
 
 ## 3. Mesin Rekonsiliasi Transaksi Pintar (*Cross-Wallet Smart Reconciliation*)

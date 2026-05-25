@@ -1,4 +1,4 @@
-# <div align="center"> McdWallet — Finance Manager </div>
+# <div align="center"> McdWallet</div>
 
 McdWallet adalah aplikasi manajemen keuangan pribadi (*personal finance manager*) berbasis mobile yang dirancang untuk membantu pengguna mengelola transaksi keuangan, memantau batas anggaran, menganalisis arus kas melalui grafik interaktif, serta menyimpan data secara aman.
 
@@ -44,3 +44,11 @@ Aplikasi McdWallet menyediakan berbagai fungsionalitas utama untuk mendukung pen
 *   **Koreksi Pintar Angka Ribuan**: Algoritma reaktif yang otomatis merekonstruksi angka ribuan yang terpotong oleh OCR (misal `25.000` terbaca `25.00`), menjamin ekstraksi nominal belanja tetap akurat secara presisi.
 *   **Antarmuka Scrollable & Keyboard-Safe**: Form modal verifikasi glassmorphic premium yang dilindungi oleh `SingleChildScrollView` dan `AnimatedPadding` (durasi 150ms) untuk menjamin 0% bug keyboard layout overflow.
 *   **Tombol Ikon Minimalis**: Tombol "Foto Ulang" berbasis ikon kamera murni (*icon-only*) untuk tampilan estetika visual yang seimbang dan modern.
+
+### 8. Pemantau Kurs Asing (Forex Monitoring)
+*   **Wise/Revolut-Style Horizontal Carousel**: Desain baris kartu minimalis premium bergulir horizontal (horizontal list) pada dasbor untuk memantau kurs mata uang asing pilihan secara real-time.
+*   **Integrasi API Publik Bebas Kunci (Keyless)**: Mengakses data nilai tukar mata uang global terupdate secara real-time menggunakan `open.er-api.com` (ExchangeRate-API terdistribusi via Cloudflare CDN) tanpa memerlukan API Key, menjamin stabilitas 100% dan bebas dari kehabisan limit kunci.
+*   **Sistem Background Auto-Refresh & Caching**: Cache pintar berbasis penyimpanan lokal (`SharedPreferences`) dengan masa berlaku (TTL) 1 jam untuk memperbarui data secara berkala tanpa membebani performa perangkat atau kuota data.
+*   **Proteksi Cooldown Refresh Manual**: Dilindungi oleh batas waktu tunggu (*cooldown*) 5 menit setiap kali pengguna melakukan gestur *pull-to-refresh* pada dasbor utama untuk menjaga efisiensi lalu lintas data dan mencegah overload server.
+*   **Seleksi Favorit & Pencarian Dinamis**: Lembar modal (bottom sheet) reaktif dengan kolom pencarian cepat untuk mencari, memilih, dan mengelola hingga 5 mata uang asing favorit secara fleksibel.
+*   **Visualisasi Trend & Konversi Cerdas**: Setiap kartu dilengkapi panah indikator trend kenaikan/penurunan harga kurs reaktif dan modul formatting pintar (pembulatan otomatis ke bilangan bulat untuk nominal di atas Rp100 agar menghemat ruang visual).

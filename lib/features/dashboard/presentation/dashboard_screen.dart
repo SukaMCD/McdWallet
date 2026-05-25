@@ -15,6 +15,8 @@ import '../../../core/providers/privacy_provider.dart';
 import 'widgets/cashflow_line_chart.dart';
 import 'widgets/expense_pie_chart.dart';
 import 'widgets/export_sheet.dart';
+import '../../forex/presentation/forex_dashboard_widget.dart';
+import '../../forex/providers/forex_provider.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -93,6 +95,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   categoryId: cId,
                   type: type,
                 );
+            ref.read(forexRatesProvider.notifier).refreshRates();
           }
         },
         child: SingleChildScrollView(
@@ -107,6 +110,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
               // ─── Quick Actions ───
               _buildQuickActions(),
+              const SizedBox(height: 36),
+
+              // ─── Forex Monitoring ───
+              const ForexDashboardWidget(),
               const SizedBox(height: 36),
 
               // ─── Analytics ───

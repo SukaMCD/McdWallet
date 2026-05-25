@@ -150,7 +150,7 @@ class ProfileScreen extends ConsumerWidget {
                             _buildInfoRow(
                               LucideIcons.code2,
                               'TENTANG',
-                              'McdWallet — Finance Manager',
+                              'McdWallet',
                               onTap: () async {
                                 final uri = Uri.parse('https://github.com/SukaMCD/McdWallet');
                                 try {
