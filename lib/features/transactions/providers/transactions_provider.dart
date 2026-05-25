@@ -315,14 +315,12 @@ class TransactionsNotifier extends StateNotifier<AsyncValue<List<TransactionMode
         final type = _ref.read(typeFilterProvider);
         await loadTransactions(user.id, walletId: walletId, categoryId: categoryId, type: type);
 
-        // Refresh allTransactionsProvider
-        _ref.read(allTransactionsProvider.notifier).loadAllTransactions(user.id);
+        // Refresh allTransactionsProvider (unfiltered) and wait for it!
+        await _ref.read(allTransactionsProvider.notifier).loadAllTransactions(user.id);
 
         // Pengecekan sisa anggaran terlampaui setelah transaksi ditambahkan (jika pengeluaran)
         if (transaction.type == 'expense') {
-          Future.delayed(const Duration(milliseconds: 500), () {
-            _checkBudgetLimits(transaction);
-          });
+          _checkBudgetLimits(transaction);
         }
       }
     } catch (e, st) {
@@ -350,14 +348,12 @@ class TransactionsNotifier extends StateNotifier<AsyncValue<List<TransactionMode
         final type = _ref.read(typeFilterProvider);
         await loadTransactions(user.id, walletId: walletId, categoryId: categoryId, type: type);
 
-        // Refresh allTransactionsProvider
-        _ref.read(allTransactionsProvider.notifier).loadAllTransactions(user.id);
+        // Refresh allTransactionsProvider (unfiltered) and wait for it!
+        await _ref.read(allTransactionsProvider.notifier).loadAllTransactions(user.id);
 
         // Pengecekan sisa anggaran terlampaui setelah transaksi ditambahkan (jika pengeluaran)
         if (newTx.type == 'expense') {
-          Future.delayed(const Duration(milliseconds: 500), () {
-            _checkBudgetLimits(newTx);
-          });
+          _checkBudgetLimits(newTx);
         }
       }
     } catch (e, st) {
@@ -367,36 +363,61 @@ class TransactionsNotifier extends StateNotifier<AsyncValue<List<TransactionMode
 
   void _checkBudgetLimits(TransactionModel transaction) {
     try {
-      final budgetsProgressAsync = _ref.read(budgetsProgressProvider);
-      final budgetsProgress = budgetsProgressAsync.value;
-      if (budgetsProgress == null) return;
+      final budgetsAsync = _ref.read(budgetsProvider);
+      final allTxsAsync = _ref.read(allTransactionsProvider);
+      
+      final budgets = budgetsAsync.value;
+      final allTxs = allTxsAsync.value;
+      
+      if (budgets == null || allTxs == null) return;
 
-      for (final progress in budgetsProgress) {
-        final budget = progress.budget;
-        
+      for (final budget in budgets) {
         // Validasi apakah tanggal transaksi berada dalam periode anggaran
         final isWithinPeriod = transaction.date.isAfter(budget.startDate.subtract(const Duration(seconds: 1))) &&
             transaction.date.isBefore(budget.endDate.add(const Duration(days: 1)));
             
         if (isWithinPeriod) {
-          // Kasus 1: Anggaran Kategori Spesifik
-          if (budget.categoryId != null && budget.categoryId == transaction.categoryId) {
-            if (progress.percentage >= 1.0) {
-              final categoryName = progress.budget.category?.name ?? 'Kategori';
+          double spent = 0.0;
+          
+          // Hitung total pengeluaran secara akurat dan sinkron
+          for (final tx in allTxs) {
+            final txWithinPeriod = tx.date.isAfter(budget.startDate.subtract(const Duration(seconds: 1))) &&
+                tx.date.isBefore(budget.endDate.add(const Duration(days: 1)));
+                
+            if (txWithinPeriod) {
+              if (tx.type == 'expense') {
+                if (budget.categoryId != null) {
+                  if (tx.categoryId == budget.categoryId) {
+                    spent += tx.amount;
+                  }
+                } else {
+                  spent += tx.amount;
+                }
+              } else if (tx.type == 'transfer' && tx.adminFee != null && tx.adminFee! > 0) {
+                if (budget.categoryId == null) {
+                  spent += tx.adminFee!;
+                }
+              }
+            }
+          }
+
+          // Jika pengeluaran melebihi limit anggaran
+          if (spent >= budget.amountLimit) {
+            // Kasus 1: Anggaran Kategori Spesifik
+            if (budget.categoryId != null && budget.categoryId == transaction.categoryId) {
+              final categoryName = budget.category?.name ?? 'Kategori';
               NotificationService().showBudgetExceededNotification(
                 categoryName: categoryName,
                 limitAmount: budget.amountLimit,
-                spentAmount: progress.spentAmount,
+                spentAmount: spent,
               );
             }
-          }
-          // Kasus 2: Anggaran Global (category_id null)
-          else if (budget.categoryId == null) {
-            if (progress.percentage >= 1.0) {
+            // Kasus 2: Anggaran Global (category_id null)
+            else if (budget.categoryId == null) {
               NotificationService().showBudgetExceededNotification(
                 categoryName: 'Anggaran Global',
                 limitAmount: budget.amountLimit,
-                spentAmount: progress.spentAmount,
+                spentAmount: spent,
               );
             }
           }

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "10250226196",
+    "project_id": "sukamcd-caea8",
+    "storage_bucket": "sukamcd-caea8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:10250226196:android:99ee1f46d835166ed97501",
+        "android_client_info": {
+          "package_name": "com.sukamcd.wallet.mcd_wallet"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAsTikPOGbpbCrbECNH0WBVd_4f2nwZEn4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

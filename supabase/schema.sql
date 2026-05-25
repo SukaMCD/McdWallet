@@ -291,3 +291,34 @@ $$ language plpgsql security definer;
 create trigger on_transaction_deleted
   after delete on public.transactions
   for each row execute procedure public.rollback_wallet_balance();
+
+-- ========================================================
+-- 8. STORAGE: Konfigurasi Bucket & Kebijakan RLS (receipts)
+-- ========================================================
+
+-- Jalankan bagian ini untuk membuat bucket 'receipts' secara otomatis via SQL jika belum dibuat.
+insert into storage.buckets (id, name, public)
+values ('receipts', 'receipts', true)
+on conflict (id) do nothing;
+
+-- RLS untuk Bucket Objects
+-- Catatan: RLS pada storage.objects biasanya sudah aktif secara default di Supabase.
+alter table storage.objects enable row level security;
+
+-- Kebijakan RLS 1: Mengizinkan user yang terautentikasi untuk mengunggah berkas ke foldernya sendiri (auth.uid())
+create policy "User dapat mengunggah struk mereka sendiri"
+  on storage.objects for insert
+  to authenticated
+  with check (bucket_id = 'receipts' and (storage.foldername(name))[1] = auth.uid()::text);
+
+-- Kebijakan RLS 2: Mengizinkan semua orang melihat struk belanja menggunakan Public URL
+create policy "Semua orang dapat melihat struk belanja"
+  on storage.objects for select
+  to public
+  using (bucket_id = 'receipts');
+
+-- Kebijakan RLS 3: Mengizinkan user menghapus struk belanja milik mereka sendiri
+create policy "User dapat menghapus struk mereka sendiri"
+  on storage.objects for delete
+  to authenticated
+  using (bucket_id = 'receipts' and (storage.foldername(name))[1] = auth.uid()::text);

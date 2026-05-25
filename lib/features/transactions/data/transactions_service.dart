@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/utils/image_compressor.dart';
 import '../domain/wallet_model.dart';
 import '../domain/category_model.dart';
 import '../domain/transaction_model.dart';
@@ -142,8 +143,16 @@ class TransactionsService {
   
   // Mengunggah file nota fisik ke Supabase Storage Bucket
   Future<String?> uploadReceipt(String userId, String filePath) async {
-    final file = File(filePath);
-    final fileExt = filePath.split('.').last;
+    File file = File(filePath);
+    
+    // Panggil kompresi gambar secara asinkron sebelum diunggah
+    try {
+      file = await ImageCompressor.compress(imageFile: file);
+    } catch (_) {
+      // Fallback aman menggunakan file asli jika terjadi kegagalan kompresi
+    }
+    
+    final fileExt = file.path.split('.').last;
     final fileName = '${DateTime.now().millisecondsSinceEpoch}.$fileExt';
     final path = '$userId/$fileName';
 

@@ -9,6 +9,7 @@ import '../../../core/widgets/app_card.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../domain/wallet_model.dart';
 import '../providers/transactions_provider.dart';
+import '../../../core/providers/privacy_provider.dart';
 
 class WalletsScreen extends ConsumerStatefulWidget {
   const WalletsScreen({Key? key}) : super(key: key);
@@ -53,6 +54,7 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
   @override
   Widget build(BuildContext context) {
     final walletsAsync = ref.watch(walletsProvider);
+    final hideBalance = ref.watch(privacyProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -156,7 +158,7 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              Formatters.formatCurrency(wallet.balance),
+                              hideBalance ? '••••••' : Formatters.formatCurrency(wallet.balance),
                               style: const TextStyle(
                                 color: AppColors.textSecondary,
                                 fontSize: 13,

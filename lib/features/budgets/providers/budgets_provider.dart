@@ -98,7 +98,7 @@ class BudgetProgress {
 // Tanpa memicu query HTTP tambahan ke Supabase (Optimalisasi Kinerja & Offline Caching)
 final budgetsProgressProvider = Provider<AsyncValue<List<BudgetProgress>>>((ref) {
   final budgetsAsync = ref.watch(budgetsProvider);
-  final transactionsAsync = ref.watch(transactionsProvider);
+  final transactionsAsync = ref.watch(allTransactionsProvider);
 
   return budgetsAsync.when(
     loading: () => const AsyncValue.loading(),

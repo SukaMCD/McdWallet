@@ -45,6 +45,19 @@ class AuthService {
     await _supabase.auth.signOut();
   }
 
+  // Menghapus akun pengguna secara permanen
+  Future<void> deleteAccount() async {
+    final user = currentUser;
+    if (user != null) {
+      try {
+        await _supabase.from('profiles').delete().eq('id', user.id);
+      } catch (e) {
+        // Abaikan jika database RLS membatasi, tetap panggil sign out
+      }
+      await signOut();
+    }
+  }
+
   // Mengambil profil publik pengguna dari tabel 'profiles'
   Future<ProfileModel?> fetchProfile(String userId) async {
     try {

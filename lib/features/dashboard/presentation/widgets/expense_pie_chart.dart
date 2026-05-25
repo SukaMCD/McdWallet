@@ -98,7 +98,7 @@ class ExpensePieChart extends StatelessWidget {
                   height: 90,
                   child: PieChart(
                     PieChartData(
-                      sectionsSpace: 2,
+                      sectionsSpace: 0,
                       centerSpaceRadius: 25,
                       sections: sections,
                       borderData: FlBorderData(show: false),

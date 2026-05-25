@@ -11,6 +11,7 @@ import '../../transactions/domain/transaction_model.dart';
 import '../../transactions/presentation/wallets_screen.dart';
 import '../../transactions/presentation/transaction_input_screen.dart';
 import '../../../core/providers/navigation_provider.dart';
+import '../../../core/providers/privacy_provider.dart';
 import 'widgets/cashflow_line_chart.dart';
 import 'widgets/expense_pie_chart.dart';
 import 'widgets/export_sheet.dart';
@@ -212,6 +213,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     AsyncValue walletsAsync,
     AsyncValue transactionsAsync,
   ) {
+    final hideBalance = ref.watch(privacyProvider);
+
     return walletsAsync.when(
       loading: () => const SizedBox(height: 110),
       error: (_, __) => const SizedBox.shrink(),
@@ -221,22 +224,39 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Total saldo',
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-              ),
+            Row(
+              children: [
+                const Text(
+                  'Total saldo',
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () => ref.read(privacyProvider.notifier).toggleHideBalance(),
+                  behavior: HitTestBehavior.opaque,
+                  child: Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: Icon(
+                      hideBalance ? LucideIcons.eyeOff : LucideIcons.eye,
+                      size: 14,
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 4),
             Text(
-              Formatters.formatCurrency(totalBalance),
-              style: const TextStyle(
+              hideBalance ? '••••••' : Formatters.formatCurrency(totalBalance),
+              style: TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 40,
+                fontSize: hideBalance ? 32 : 40,
                 fontWeight: FontWeight.w800,
-                letterSpacing: -1.8,
+                letterSpacing: hideBalance ? 2.0 : -1.8,
                 height: 1.05,
               ),
             ),
@@ -293,7 +313,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           ),
                           const SizedBox(width: 5),
                           Text(
-                            '${isPositive ? '+' : ''}${Formatters.formatCurrency(net)}',
+                            hideBalance ? '${isPositive ? '+' : ''}••••••' : '${isPositive ? '+' : ''}${Formatters.formatCurrency(net)}',
                             style: TextStyle(
                               color: isPositive
                                   ? AppColors.primary
@@ -339,7 +359,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             color: AppColors.border, width: 0.5),
                       ),
                       child: Text(
-                        '${w.name}  ${Formatters.formatCurrency(w.balance)}',
+                        hideBalance ? '${w.name}  ••••••' : '${w.name}  ${Formatters.formatCurrency(w.balance)}',
                         style: const TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 11,
@@ -550,6 +570,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     double totalOut,
     double incomeRatio,
   ) {
+    final hideBalance = ref.watch(privacyProvider);
+
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
       decoration: BoxDecoration(
@@ -589,7 +611,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     ),
                     const SizedBox(height: 5),
                     Text(
-                      Formatters.formatCurrency(totalIn),
+                      hideBalance ? '••••••' : Formatters.formatCurrency(totalIn),
                       style: const TextStyle(
                         color: AppColors.income,
                         fontSize: 15,
@@ -637,7 +659,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     ),
                     const SizedBox(height: 5),
                     Text(
-                      Formatters.formatCurrency(totalOut),
+                      hideBalance ? '••••••' : Formatters.formatCurrency(totalOut),
                       style: const TextStyle(
                         color: AppColors.expense,
                         fontSize: 15,

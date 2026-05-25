@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'core/constants/colors.dart';
 import 'core/constants/config.dart';
 import 'core/theme/theme.dart';
@@ -35,6 +36,14 @@ void main() async {
   // Inisialisasi lokalisasi penanggalan Indonesia (id_ID)
   await initializeDateFormatting('id_ID', null);
 
+  // Inisialisasi Firebase & FCM (opsional jika setup android/iOS belum dilakukan)
+  try {
+    await Firebase.initializeApp();
+    debugPrint('Firebase initialized successfully.');
+  } catch (e) {
+    debugPrint('Firebase Initialization failed: $e');
+  }
+
   // Inisialisasi Supabase secara aman (tidak crash jika key belum diganti)
   try {
     if (AppConfig.supabaseUrl.startsWith('http')) {
@@ -48,13 +57,6 @@ void main() async {
     }
   } catch (e) {
     debugPrint('Supabase Initialization failed: $e');
-  }
-
-  // Inisialisasi Firebase & FCM (opsional jika setup android/iOS belum dilakukan)
-  try {
-    // await Firebase.initializeApp();
-  } catch (e) {
-    debugPrint('Firebase Initialization failed: $e');
   }
 
   runApp(

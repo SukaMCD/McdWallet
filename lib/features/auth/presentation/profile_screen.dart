@@ -4,10 +4,12 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../core/constants/colors.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/app_card.dart';
 import '../providers/auth_provider.dart';
+import 'settings_screen.dart';
 
 final appVersionProvider = FutureProvider<String>((ref) async {
   try {
@@ -30,6 +32,19 @@ class ProfileScreen extends ConsumerWidget {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Profil'),
+        actions: [
+          IconButton(
+            icon: const Icon(LucideIcons.settings, color: AppColors.textPrimary),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
+              );
+            },
+            tooltip: 'Pengaturan',
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
@@ -48,13 +63,6 @@ class ProfileScreen extends ConsumerWidget {
                 error: (err, _) => Text('Error: $err', style: const TextStyle(color: AppColors.danger)),
                 data: (profile) {
                   if (profile == null) return const Text('Profil tidak ditemukan', style: TextStyle(color: AppColors.textSecondary));
-
-                  // Get initials from name
-                  final initials = profile.fullName
-                      .split(' ')
-                      .take(2)
-                      .map((e) => e.isNotEmpty ? e[0].toUpperCase() : '')
-                      .join();
 
                   return Column(
                     children: [
@@ -180,12 +188,24 @@ class ProfileScreen extends ConsumerWidget {
               AppCard(
                 child: Column(
                   children: [
+                    // ── Trakteer ──
                     _buildInfoRow(
-                      LucideIcons.creditCard,
-                      'PAYPAL',
-                      'Donasi via PayPal',
+                      LucideIcons.heart,
+                      'TRAKTEER',
+                      'Trakteer Aku',
+                      iconWidget: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceAlt,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Center(
+                          child: FaIcon(FontAwesomeIcons.heartCirclePlus, color: AppColors.textSecondary, size: 16),
+                        ),
+                      ),
                       onTap: () async {
-                        final uri = Uri.parse('https://paypal.me/sukamcd?country.x=ID&locale.x=id_ID');
+                        final uri = Uri.parse('https://trakteer.id/sukamcd');
                         try {
                           await launchUrl(uri, mode: LaunchMode.externalApplication);
                         } catch (_) {
@@ -197,10 +217,22 @@ class ProfileScreen extends ConsumerWidget {
                       padding: EdgeInsets.symmetric(vertical: 16),
                       child: Divider(color: AppColors.border, height: 1, thickness: 0.5),
                     ),
+                    // ── Ko-fi ──
                     _buildInfoRow(
                       LucideIcons.coffee,
                       'KO-FI',
                       'Traktir Kopi',
+                      iconWidget: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceAlt,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Center(
+                          child: FaIcon(FontAwesomeIcons.koFi, color: AppColors.textSecondary, size: 16),
+                        ),
+                      ),
                       onTap: () async {
                         final uri = Uri.parse('https://ko-fi.com/SukaMCD');
                         try {
@@ -222,7 +254,7 @@ class ProfileScreen extends ConsumerWidget {
                 color: AppColors.expense,
                 icon: LucideIcons.logOut,
                 onPressed: () {
-                  ref.read(authServiceProvider).signOut();
+                  _showLogoutBottomSheet(context, ref);
                 },
               ).animate().fadeIn(delay: 600.ms, duration: 400.ms),
 
@@ -233,10 +265,10 @@ class ProfileScreen extends ConsumerWidget {
       );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value, {VoidCallback? onTap}) {
+  Widget _buildInfoRow(IconData icon, String label, String value, {VoidCallback? onTap, Widget? iconWidget}) {
     final row = Row(
       children: [
-        Container(
+        iconWidget ?? Container(
           width: 36,
           height: 36,
           decoration: BoxDecoration(
@@ -284,5 +316,107 @@ class ProfileScreen extends ConsumerWidget {
       );
     }
     return row;
+  }
+
+  void _showLogoutBottomSheet(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+          ),
+          padding: const EdgeInsets.only(
+            left: 24.0,
+            right: 24.0,
+            top: 24.0,
+            bottom: 36.0,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.border,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(LucideIcons.logOut, color: AppColors.primary, size: 28),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Konfirmasi Keluar',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Apakah Anda yakin ingin keluar dari akun Anda?',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 13,
+                ),
+              ),
+              const SizedBox(height: 28),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.textSecondary,
+                        side: const BorderSide(color: AppColors.border),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text('Batal', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context); // Close bottomsheet
+                        ref.read(authServiceProvider).signOut();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.expense,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text('Keluar', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
