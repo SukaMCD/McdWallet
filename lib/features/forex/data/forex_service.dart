@@ -83,6 +83,12 @@ class ForexService {
     return data != null && data.isNotEmpty;
   }
 
+  /// Ambil semua rates yang tersimpan di cache (mengabaikan kedaluwarsa untuk offline fallback)
+  Future<List<ForexRateModel>> getCachedRates() async {
+    final data = await _readCache(ignoreExpiry: true);
+    return data ?? [];
+  }
+
   // ════════════════════════════════════════════════════════════
   //  PRIVATE – FETCH
   // ════════════════════════════════════════════════════════════

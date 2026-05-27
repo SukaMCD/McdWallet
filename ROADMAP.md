@@ -119,6 +119,22 @@ Daftar fungsionalitas baru untuk memperluas jangkauan penggunaan aplikasi McdWal
     *   Mengecek kondisi target harga saat proses auto-sync latar belakang berjalan setiap 1 jam, dan memicu notifikasi lokal reaktif di bilah status bar jika target terlampaui.
 *   **Kompleksitas**: Sedang (Medium)
 
+### [ ] Asisten Keuangan Pintar Interaktif (*AI Financial Advisor - MCD AI*)
+*   **Deskripsi**: Fasilitas obrolan interaktif (*Chatbot chatbot*) premium glassmorphic di mana pengguna bisa berdiskusi langsung mengenai kondisi kesehatan keuangannya dengan AI yang ditenagai oleh Gemini API.
+*   **Strategi Implementasi**:
+    *   Membuat modul antarmuka obrolan premium dengan transisi animasi halus di dalam tab menu baru.
+    *   Secara aman mengirimkan riwayat transaksi bulanan terenkripsi (tanpa data sensitif) ke Gemini API sebagai konteks dasar analisis keuangan.
+    *   AI dilatih khusus untuk memberikan saran penghematan taktis personal, ramalan pengeluaran kategori boros, serta menyusun rencana menabung impian secara interaktif.
+*   **Kompleksitas**: Sedang (Medium)
+
+### [ ] Klasifikasi Kategori Transaksi Cerdas (*AI Smart Auto-Categorization*)
+*   **Deskripsi**: Pengisian otomatis kategori transaksi secara instan berbasis AI semantik saat pengguna mengetik deskripsi transaksi secara manual.
+*   **Strategi Implementasi**:
+    *   Membaca input teks deskripsi transaksi secara real-time saat diketik oleh user (misal: *"beli kopi starbucks"* atau *"bayar grab ke stasiun"*).
+    *   Menggunakan model NLP ringan / Gemini API untuk mengekstrak makna semantik kalimat secara instan.
+    *   Memilih secara otomatis kategori yang paling cocok (seperti makanan/minuman atau transportasi) di dropdown transaksi disertai micro-animation pil kartu rekomendasi yang menawan di bawah field input.
+*   **Kompleksitas**: Sedang (Medium)
+
 ---
 
 ## 3. Mesin Rekonsiliasi Transaksi Pintar (*Cross-Wallet Smart Reconciliation*)

@@ -36,6 +36,7 @@ create table public.wallets (
   balance numeric(15, 2) default 0.00 not null,
   color text default '#4CAF50' not null, -- Hex warna (misal: #4CAF50)
   icon text default 'account_balance_wallet' not null,  -- Nama icon material
+  currency_code text default 'IDR' not null,            -- Kode mata uang dasar dompet (e.g., IDR, USD)
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
@@ -97,6 +98,8 @@ create table public.transactions (
   wallet_id uuid references public.wallets(id) on delete restrict not null,
   category_id uuid references public.categories(id) on delete restrict, -- Null jika tipe = 'transfer'
   amount numeric(15, 2) not null check (amount > 0),
+  amount_in_idr numeric(15, 2),                                         -- Setara Rupiah saat transaksi terjadi (untuk valas)
+  target_amount numeric(15, 2),                                         -- Nilai nominal terkonversi yang diterima di dompet tujuan (untuk transfer valas)
   type text check (type in ('income', 'expense', 'transfer')) not null,
   description text,
   date timestamp with time zone default timezone('utc'::text, now()) not null,
@@ -241,14 +244,14 @@ begin
     set balance = balance + new.amount
     where id = new.wallet_id;
   
-  -- Transfer: Kurangi saldo dompet asal (nominal + biaya admin), tambah saldo dompet tujuan
+  -- Transfer: Kurangi saldo dompet asal (nominal + biaya admin), tambah saldo dompet tujuan (menggunakan target_amount terkonversi)
   elseif new.type = 'transfer' and new.to_wallet_id is not null then
     update public.wallets
     set balance = balance - (new.amount + coalesce(new.admin_fee, 0))
     where id = new.wallet_id;
 
     update public.wallets
-    set balance = balance + new.amount
+    set balance = balance + coalesce(new.target_amount, new.amount)
     where id = new.to_wallet_id;
   end if;
   
@@ -280,7 +283,7 @@ begin
     where id = old.wallet_id;
 
     update public.wallets
-    set balance = balance - old.amount
+    set balance = balance - coalesce(old.target_amount, old.amount)
     where id = old.to_wallet_id;
   end if;
   

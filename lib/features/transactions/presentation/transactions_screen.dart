@@ -332,6 +332,11 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     List<WalletModel>? wallets,
     String? activeWalletFilter,
   ) {
+    final activeWallet = (wallets != null && activeWalletFilter != null)
+        ? wallets.firstWhere((w) => w.id == activeWalletFilter, orElse: () => wallets.first)
+        : null;
+    final currencyCode = activeWallet?.currencyCode ?? 'IDR';
+
     final monthTxs = filteredTxs.where((tx) {
       return tx.date.year == _selectedMonth.year &&
           tx.date.month == _selectedMonth.month;
@@ -512,7 +517,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                         FittedBox(
                           fit: BoxFit.scaleDown,
                           child: Text(
-                            Formatters.formatCurrency(saldoAwal),
+                            Formatters.formatCurrencyWithCode(saldoAwal, currencyCode),
                             style: const TextStyle(
                               color: AppColors.textPrimary,
                               fontSize: 13,
@@ -565,7 +570,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                         FittedBox(
                           fit: BoxFit.scaleDown,
                           child: Text(
-                            Formatters.formatCurrency(saldoAkhir),
+                            Formatters.formatCurrencyWithCode(saldoAkhir, currencyCode),
                             style: const TextStyle(
                               color: AppColors.primary,
                               fontSize: 13,
@@ -592,7 +597,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        Formatters.formatCurrency(totalIncome),
+                        Formatters.formatCurrencyWithCode(totalIncome, currencyCode),
                         style: const TextStyle(
                           color: AppColors.income,
                           fontSize: 12,
@@ -613,7 +618,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        Formatters.formatCurrency(totalExpense),
+                        Formatters.formatCurrencyWithCode(totalExpense, currencyCode),
                         style: const TextStyle(
                           color: AppColors.expense,
                           fontSize: 12,
@@ -634,7 +639,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        Formatters.formatCurrency(netBalance),
+                        Formatters.formatCurrencyWithCode(netBalance, currencyCode),
                         style: TextStyle(
                           color: netBalance >= 0 ? AppColors.textPrimary : AppColors.expense,
                           fontSize: 12,
@@ -801,7 +806,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                   if (isTransfer && tx.adminFee != null && tx.adminFee! > 0) ...[
                     const SizedBox(height: 4),
                     Text(
-                      'Biaya Admin: ${Formatters.formatCurrency(tx.adminFee!)}',
+                      'Biaya Admin: ${Formatters.formatCurrencyWithCode(tx.adminFee!, tx.wallet?.currencyCode ?? 'IDR')}',
                       style: const TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 10,
@@ -821,7 +826,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '$prefix${Formatters.formatCurrency(tx.amount)}',
+                  '$prefix${Formatters.formatCurrencyWithCode(tx.amount, tx.wallet?.currencyCode ?? 'IDR')}',
                   style: TextStyle(
                     color: valueColor,
                     fontWeight: FontWeight.bold,
@@ -1217,7 +1222,7 @@ class _TransactionDetailsDialog extends ConsumerWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      Formatters.formatCurrency(tx.amount),
+                      Formatters.formatCurrencyWithCode(tx.amount, tx.wallet?.currencyCode ?? 'IDR'),
                       style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: amountColor),
                     ),
                   ],
@@ -1238,9 +1243,9 @@ class _TransactionDetailsDialog extends ConsumerWidget {
                 _buildDetailRow('Dompet Tujuan', tx.toWallet?.name ?? 'Dompet Tujuan'),
                 if (tx.adminFee != null && tx.adminFee! > 0) ...[
                   const SizedBox(height: 12),
-                  _buildDetailRow('Biaya Admin', Formatters.formatCurrency(tx.adminFee!)),
+                  _buildDetailRow('Biaya Admin', Formatters.formatCurrencyWithCode(tx.adminFee!, tx.wallet?.currencyCode ?? 'IDR')),
                   const SizedBox(height: 12),
-                  _buildDetailRow('Total Potong Saldo', Formatters.formatCurrency(tx.amount + tx.adminFee!)),
+                  _buildDetailRow('Total Potong Saldo', Formatters.formatCurrencyWithCode(tx.amount + tx.adminFee!, tx.wallet?.currencyCode ?? 'IDR')),
                 ],
               ],
               const SizedBox(height: 12),

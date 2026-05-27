@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:intl/intl.dart';
 import '../../../core/constants/colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/custom_button.dart';
@@ -10,6 +11,7 @@ import '../../auth/providers/auth_provider.dart';
 import '../domain/wallet_model.dart';
 import '../providers/transactions_provider.dart';
 import '../../../core/providers/privacy_provider.dart';
+import '../../forex/domain/forex_rate_model.dart';
 
 class WalletsScreen extends ConsumerStatefulWidget {
   const WalletsScreen({Key? key}) : super(key: key);
@@ -19,6 +21,12 @@ class WalletsScreen extends ConsumerStatefulWidget {
 }
 
 class _WalletsScreenState extends ConsumerState<WalletsScreen> {
+  String _formatWalletBalance(WalletModel wallet) {
+    final symbol = CurrencyMetadata.getSymbol(wallet.currencyCode);
+    final formattedVal = NumberFormat.decimalPattern('id_ID').format(wallet.balance);
+    return '$symbol $formattedVal';
+  }
+
   final List<String> _colorOptions = [
     '#10B981', // Emerald Green
     '#8B5CF6', // Violet
@@ -158,7 +166,7 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              hideBalance ? '••••••' : Formatters.formatCurrency(wallet.balance),
+                              hideBalance ? '••••••' : _formatWalletBalance(wallet),
                               style: const TextStyle(
                                 color: AppColors.textSecondary,
                                 fontSize: 13,
@@ -263,6 +271,7 @@ class _AddWalletBottomSheetState extends ConsumerState<_AddWalletBottomSheet> {
   
   late String _selectedColor;
   late String _selectedIconName;
+  String _selectedCurrency = 'IDR';
   bool _isSaving = false;
 
   @override
@@ -300,6 +309,7 @@ class _AddWalletBottomSheetState extends ConsumerState<_AddWalletBottomSheet> {
         color: _selectedColor,
         icon: _selectedIconName,
         createdAt: DateTime.now(),
+        currencyCode: _selectedCurrency,
       );
 
       await ref.read(walletsProvider.notifier).addWallet(newWallet);
@@ -372,6 +382,75 @@ class _AddWalletBottomSheetState extends ConsumerState<_AddWalletBottomSheet> {
                     }
                     return null;
                   },
+                ),
+                const SizedBox(height: 20),
+
+                // PILIHAN MATA UANG
+                const Text(
+                  'Mata Uang Dompet',
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceAlt.withOpacity(0.4),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.border, width: 0.8),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: _selectedCurrency,
+                      isExpanded: true,
+                      dropdownColor: AppColors.surface,
+                      icon: const Icon(LucideIcons.chevronDown, size: 18, color: AppColors.textSecondary),
+                      style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
+                      items: ['IDR', 'USD', 'SGD', 'EUR', 'JPY', 'GBP', 'MYR'].map((String value) {
+                        final flag = CurrencyMetadata.getFlag(value);
+                        final name = CurrencyMetadata.getName(value);
+                        final isIdr = value == 'IDR';
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Row(
+                            children: [
+                              Text(flag, style: TextStyle(fontSize: 18, color: isIdr ? null : AppColors.textMuted.withOpacity(0.5))),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  isIdr ? '$value - $name' : '$value - $name (Sedang dalam pengembangan)',
+                                  style: TextStyle(
+                                    color: isIdr ? AppColors.textPrimary : AppColors.textMuted.withOpacity(0.5),
+                                    fontSize: 14,
+                                    fontWeight: isIdr ? FontWeight.w600 : FontWeight.normal,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (newValue) {
+                        if (newValue != null) {
+                          if (newValue != 'IDR') {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Fitur Multi-Mata Uang (Valas) sedang dalam pengembangan!'),
+                                backgroundColor: AppColors.warning,
+                              ),
+                            );
+                            return;
+                          }
+                          setState(() {
+                            _selectedCurrency = newValue;
+                          });
+                        }
+                      },
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 20),
                 

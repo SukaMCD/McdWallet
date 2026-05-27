@@ -78,7 +78,7 @@ class _DepositSavingsSheetState extends ConsumerState<DepositSavingsSheet> {
               ),
               const SizedBox(height: 12),
               Text(
-                'Saldo dompet "${_selectedWallet!.name}" saat ini (${Formatters.formatCurrency(_selectedWallet!.balance)}) kurang dari nominal yang ingin ditabung (${Formatters.formatCurrency(amount)}). Tetap lanjutkan transaksi?',
+                'Saldo dompet "${_selectedWallet!.name}" saat ini (${Formatters.formatCurrencyWithCode(_selectedWallet!.balance, _selectedWallet!.currencyCode)}) kurang dari nominal yang ingin ditabung (${Formatters.formatCurrency(amount)}). Tetap lanjutkan transaksi?',
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
               ),
@@ -279,8 +279,11 @@ class _DepositSavingsSheetState extends ConsumerState<DepositSavingsSheet> {
                     }
                     
                     if (_selectedWallet == null && wallets.isNotEmpty) {
-                      // Ambil dompet pertama sebagai default
-                      _selectedWallet = wallets.first;
+                      // Ambil dompet IDR pertama sebagai default yang aman
+                      _selectedWallet = wallets.firstWhere(
+                        (w) => w.currencyCode == 'IDR',
+                        orElse: () => wallets.first,
+                      );
                     }
 
                     return DropdownButtonFormField<String>(
@@ -292,24 +295,52 @@ class _DepositSavingsSheetState extends ConsumerState<DepositSavingsSheet> {
                       ),
                       items: wallets.map((wallet) {
                         final color = Color(int.parse(wallet.color.replaceAll('#', '0xFF')));
+                        final isIdr = wallet.currencyCode == 'IDR';
                         return DropdownMenuItem<String>(
                           value: wallet.id,
                           child: Row(
                             children: [
-                              Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: isIdr ? color : AppColors.textMuted.withOpacity(0.5),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
                               const SizedBox(width: 10),
-                              Text(
-                                '${wallet.name} (${Formatters.formatCurrency(wallet.balance)})', 
-                                style: const TextStyle(color: AppColors.textPrimary, fontSize: 14)
+                              Expanded(
+                                child: Text(
+                                  isIdr
+                                      ? '${wallet.name} (${Formatters.formatCurrencyWithCode(wallet.balance, wallet.currencyCode)})'
+                                      : '${wallet.name} (Sedang dalam pengembangan)',
+                                  style: TextStyle(
+                                    color: isIdr ? AppColors.textPrimary : AppColors.textMuted.withOpacity(0.5),
+                                    fontSize: 14,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
                             ],
                           ),
                         );
                       }).toList(),
                       onChanged: (val) {
-                        setState(() {
-                          _selectedWallet = wallets.firstWhere((w) => w.id == val);
-                        });
+                        if (val != null) {
+                          final wallet = wallets.firstWhere((w) => w.id == val);
+                          if (wallet.currencyCode != 'IDR') {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Dompet dengan mata uang asing dinonaktifkan sementara (Sedang dalam pengembangan).'),
+                                backgroundColor: AppColors.warning,
+                              ),
+                            );
+                            return;
+                          }
+                          setState(() {
+                            _selectedWallet = wallet;
+                          });
+                        }
                       },
                     );
                   },

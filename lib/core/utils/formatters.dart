@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
+import '../../features/forex/domain/forex_rate_model.dart';
 
 class Formatters {
   // Format mata uang Rupiah (IDR)
@@ -10,6 +11,16 @@ class Formatters {
       decimalDigits: 0,
     );
     return formatter.format(amount);
+  }
+
+  // Format mata uang kustom berdasarkan kode mata uang (offline-friendly)
+  static String formatCurrencyWithCode(double amount, String currencyCode) {
+    if (currencyCode.toUpperCase() == 'IDR') {
+      return formatCurrency(amount);
+    }
+    final symbol = CurrencyMetadata.getSymbol(currencyCode);
+    final formattedVal = NumberFormat.decimalPattern('id_ID').format(amount);
+    return '$symbol $formattedVal';
   }
 
   // Format tanggal Indonesia dengan Hari (contoh: Minggu, 24 Mei 2026)
@@ -39,19 +50,44 @@ class IndonesianCurrencyInputFormatter extends TextInputFormatter {
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
-    if (newValue.selection.baseOffset == 0) {
+    if (newValue.selection.baseOffset == 0 || newValue.text.isEmpty) {
       return newValue;
     }
 
-    // Hanya ambil angka saja
-    final String cleanString = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
-    if (cleanString.isEmpty) {
+    final String text = newValue.text;
+    
+    // Cari posisi koma decimal
+    final int commaIndex = text.indexOf(',');
+    String integerPart = text;
+    String? decimalPart;
+    
+    if (commaIndex != -1) {
+      integerPart = text.substring(0, commaIndex);
+      decimalPart = text.substring(commaIndex + 1);
+    }
+    
+    // Bersihkan bagian integer
+    String cleanInt = integerPart.replaceAll(RegExp(r'[^0-9]'), '');
+    if (cleanInt.isEmpty && commaIndex == -1) {
       return newValue.copyWith(text: '');
     }
-
-    final double value = double.parse(cleanString);
+    if (cleanInt.isEmpty && commaIndex != -1) {
+      cleanInt = '0';
+    }
+    
+    final double value = double.parse(cleanInt);
     final formatter = NumberFormat.decimalPattern('id_ID');
-    final String newText = formatter.format(value);
+    String formattedInt = formatter.format(value);
+    
+    String newText = formattedInt;
+    if (commaIndex != -1) {
+      String cleanDec = decimalPart!.replaceAll(RegExp(r'[^0-9]'), '');
+      // Batasi 2 digit desimal untuk valas
+      if (cleanDec.length > 2) {
+        cleanDec = cleanDec.substring(0, 2);
+      }
+      newText = '$formattedInt,$cleanDec';
+    }
 
     return newValue.copyWith(
       text: newText,

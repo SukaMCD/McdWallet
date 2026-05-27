@@ -7,6 +7,8 @@ class TransactionModel {
   final String walletId;
   final String? categoryId; // Null if type = 'transfer'
   final double amount;
+  final double? amountInIdr; // Setara Rupiah saat transaksi terjadi (untuk valas)
+  final double? targetAmount; // Nilai nominal terkonversi yang diterima di dompet tujuan (untuk transfer valas)
   final String type; // 'income', 'expense', 'transfer'
   final String? description;
   final DateTime date;
@@ -26,6 +28,8 @@ class TransactionModel {
     required this.walletId,
     this.categoryId,
     required this.amount,
+    this.amountInIdr,
+    this.targetAmount,
     required this.type,
     this.description,
     required this.date,
@@ -45,6 +49,8 @@ class TransactionModel {
       walletId: json['wallet_id'] as String,
       categoryId: json['category_id'] as String?,
       amount: (json['amount'] as num).toDouble(),
+      amountInIdr: json['amount_in_idr'] != null ? (json['amount_in_idr'] as num).toDouble() : null,
+      targetAmount: json['target_amount'] != null ? (json['target_amount'] as num).toDouble() : null,
       type: json['type'] as String,
       description: json['description'] as String?,
       date: DateTime.parse(json['date'] as String),
@@ -64,6 +70,8 @@ class TransactionModel {
       'wallet_id': walletId,
       'category_id': categoryId,
       'amount': amount,
+      'amount_in_idr': amountInIdr,
+      'target_amount': targetAmount,
       'type': type,
       'description': description,
       'date': date.toIso8601String(),
@@ -84,6 +92,8 @@ class TransactionModel {
     String? walletId,
     String? categoryId,
     double? amount,
+    double? amountInIdr,
+    double? targetAmount,
     String? type,
     String? description,
     DateTime? date,
@@ -101,6 +111,8 @@ class TransactionModel {
       walletId: walletId ?? this.walletId,
       categoryId: categoryId ?? this.categoryId,
       amount: amount ?? this.amount,
+      amountInIdr: amountInIdr ?? this.amountInIdr,
+      targetAmount: targetAmount ?? this.targetAmount,
       type: type ?? this.type,
       description: description ?? this.description,
       date: date ?? this.date,

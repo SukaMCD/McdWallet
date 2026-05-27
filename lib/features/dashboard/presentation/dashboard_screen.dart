@@ -221,12 +221,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     AsyncValue transactionsAsync,
   ) {
     final hideBalance = ref.watch(privacyProvider);
+    final totalBalanceAsync = ref.watch(totalBalanceProvider);
 
     return walletsAsync.when(
       loading: () => const SizedBox(height: 110),
       error: (_, __) => const SizedBox.shrink(),
       data: (wallets) {
-        final totalBalance = wallets.fold(0.0, (sum, w) => sum + w.balance);
+        final totalBalance = totalBalanceAsync.value ?? 0.0;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -366,7 +367,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             color: AppColors.border, width: 0.5),
                       ),
                       child: Text(
-                        hideBalance ? '${w.name}  ••••••' : '${w.name}  ${Formatters.formatCurrency(w.balance)}',
+                        hideBalance ? '${w.name}  ••••••' : '${w.name}  ${Formatters.formatCurrencyWithCode(w.balance, w.currencyCode)}',
                         style: const TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 11,
@@ -931,7 +932,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         if (isTransfer && tx.adminFee != null && tx.adminFee! > 0) ...[
                           const SizedBox(height: 3),
                           Text(
-                            'Biaya Admin: ${Formatters.formatCurrency(tx.adminFee!)}',
+                            'Biaya Admin: ${Formatters.formatCurrencyWithCode(tx.adminFee!, tx.wallet?.currencyCode ?? 'IDR')}',
                             style: const TextStyle(
                               color: AppColors.textMuted,
                               fontSize: 10,
@@ -948,7 +949,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        '$amountPrefix${Formatters.formatCurrency(tx.amount)}',
+                        '$amountPrefix${Formatters.formatCurrencyWithCode(tx.amount, tx.wallet?.currencyCode ?? 'IDR')}',
                         style: TextStyle(
                           color: isTransfer
                               ? AppColors.textPrimary

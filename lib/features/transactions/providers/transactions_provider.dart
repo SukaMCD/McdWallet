@@ -8,6 +8,7 @@ import '../domain/transaction_model.dart';
 import '../../../core/providers/supabase_provider.dart';
 import '../../../core/services/notification_service.dart';
 import '../../budgets/providers/budgets_provider.dart';
+import '../../forex/providers/forex_provider.dart';
 
 // Provider untuk TransactionsService
 final transactionsServiceProvider = Provider<TransactionsService>((ref) {
@@ -386,12 +387,13 @@ class TransactionsNotifier extends StateNotifier<AsyncValue<List<TransactionMode
                 
             if (txWithinPeriod) {
               if (tx.type == 'expense') {
+                final double txAmountInIdr = tx.amountInIdr ?? tx.amount;
                 if (budget.categoryId != null) {
                   if (tx.categoryId == budget.categoryId) {
-                    spent += tx.amount;
+                    spent += txAmountInIdr;
                   }
                 } else {
-                  spent += tx.amount;
+                  spent += txAmountInIdr;
                 }
               } else if (tx.type == 'transfer' && tx.adminFee != null && tx.adminFee! > 0) {
                 if (budget.categoryId == null) {
@@ -452,3 +454,39 @@ class TransactionsNotifier extends StateNotifier<AsyncValue<List<TransactionMode
     }
   }
 }
+
+/// Provider untuk menghitung akumulasi total saldo seluruh dompet dalam Rupiah secara reaktif.
+final totalBalanceProvider = FutureProvider<double>((ref) async {
+  final wallets = ref.watch(walletsProvider).value ?? [];
+  if (wallets.isEmpty) return 0.0;
+
+  // Baca seluruh rates dari cache lokal (offline-safe & lengkap 150+ mata uang)
+  final allRates = await ref.read(forexServiceProvider).getCachedRates();
+  final Map<String, double> ratesMap = {
+    for (final r in allRates) r.code.toUpperCase(): r.rate
+  };
+
+  double total = 0.0;
+  for (final w in wallets) {
+    final code = w.currencyCode.toUpperCase();
+    if (code == 'IDR') {
+      total += w.balance;
+    } else {
+      final rate = ratesMap[code] ?? 0.0;
+      if (rate > 0) {
+        total += w.balance * rate;
+      } else {
+        // Fallback default statis
+        double fallbackRate = 1.0;
+        if (code == 'USD') fallbackRate = 16230.0;
+        else if (code == 'SGD') fallbackRate = 12050.0;
+        else if (code == 'EUR') fallbackRate = 17620.0;
+        else if (code == 'JPY') fallbackRate = 103.5;
+        else if (code == 'MYR') fallbackRate = 3450.0;
+        else if (code == 'GBP') fallbackRate = 20610.0;
+        total += w.balance * fallbackRate;
+      }
+    }
+  }
+  return total;
+});

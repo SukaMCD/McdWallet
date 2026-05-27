@@ -96,6 +96,7 @@ class _CurrencyInfo {
 /// Digunakan sebagai fallback dan untuk tampilan selector.
 class CurrencyMetadata {
   static const Map<String, _CurrencyInfo> _currencies = {
+    'IDR': _CurrencyInfo('Rupiah Indonesia', 'Rp', '🇮🇩'),
     'USD': _CurrencyInfo('Dolar Amerika', r'$', '🇺🇸'),
     'SGD': _CurrencyInfo('Dolar Singapura', r'S$', '🇸🇬'),
     'EUR': _CurrencyInfo('Euro', '€', '🇪🇺'),

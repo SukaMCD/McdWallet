@@ -6,6 +6,7 @@ class WalletModel {
   final String color;
   final String icon;
   final DateTime createdAt;
+  final String currencyCode; // Kode mata uang dasar dompet (IDR, USD, dll.)
 
   WalletModel({
     required this.id,
@@ -15,6 +16,7 @@ class WalletModel {
     required this.color,
     required this.icon,
     required this.createdAt,
+    this.currencyCode = 'IDR',
   });
 
   factory WalletModel.fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,7 @@ class WalletModel {
       color: json['color'] as String? ?? '#4CAF50',
       icon: json['icon'] as String? ?? 'account_balance_wallet',
       createdAt: DateTime.parse(json['created_at'] as String),
+      currencyCode: json['currency_code'] as String? ?? 'IDR',
     );
   }
 
@@ -37,6 +40,7 @@ class WalletModel {
       'color': color,
       'icon': icon,
       'created_at': createdAt.toIso8601String(),
+      'currency_code': currencyCode,
     };
     if (id.isNotEmpty) {
       json['id'] = id;
@@ -52,6 +56,7 @@ class WalletModel {
     String? color,
     String? icon,
     DateTime? createdAt,
+    String? currencyCode,
   }) {
     return WalletModel(
       id: id ?? this.id,
@@ -61,6 +66,7 @@ class WalletModel {
       color: color ?? this.color,
       icon: icon ?? this.icon,
       createdAt: createdAt ?? this.createdAt,
+      currencyCode: currencyCode ?? this.currencyCode,
     );
   }
 }
