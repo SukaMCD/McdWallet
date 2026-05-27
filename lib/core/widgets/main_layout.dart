@@ -9,9 +9,9 @@ import '../constants/colors.dart';
 import '../providers/navigation_provider.dart';
 
 class MainLayout extends ConsumerWidget {
-  const MainLayout({Key? key}) : super(key: key);
+  const MainLayout({super.key});
 
-  final List<Widget> _screens = const [
+  static const List<Widget> _screens = [
     DashboardScreen(),
     TransactionsScreen(),
     BudgetsScreen(),
@@ -31,48 +31,48 @@ class MainLayout extends ConsumerWidget {
       bottomNavigationBar: SafeArea(
         child: Container(
           height: 64,
-          margin: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           decoration: BoxDecoration(
             color: AppColors.surface,
             borderRadius: BorderRadius.circular(24),
             border: Border.all(color: AppColors.border, width: 0.8),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
+                color: Colors.black.withValues(alpha: 0.03),
                 blurRadius: 16,
                 offset: const Offset(0, 6),
               ),
             ],
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
           child: LayoutBuilder(
             builder: (context, constraints) {
               final totalWidth = constraints.maxWidth;
-              // We use a total flex of 50: unselected = 11 flex, selected = 17 flex.
-              // Total = 11 * 3 + 17 = 50.
+              // 4 tab: unselected = 10 flex, selected = 20 flex
+              // Total = 10 * 3 + 20 = 50
               final unitWidth = totalWidth / 50;
-              final pillWidth = 17 * unitWidth - 8;
-              final leftOffset = selectedIndex * 11 * unitWidth + 4;
-              
+              final pillWidth = 20 * unitWidth - 8;
+              final leftOffset = selectedIndex * 10 * unitWidth + 4;
+
               return Stack(
                 children: [
-                  // Smooth Sliding & Morphing Active Pill Background
+                  // Pill sliding aktif
                   AnimatedPositioned(
                     duration: const Duration(milliseconds: 250),
                     curve: Curves.fastOutSlowIn,
                     left: leftOffset,
-                    top: (constraints.maxHeight - 38) / 2, // Centered vertically
-                    height: 38, // Compact height
+                    top: (constraints.maxHeight - 38) / 2,
+                    height: 38,
                     width: pillWidth,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: AppColors.surfaceAlt, // Premium silver highlight
+                        color: AppColors.surfaceAlt,
                         borderRadius: BorderRadius.circular(14),
                       ),
                     ),
                   ),
-                  
-                  // Interactive Row
+
+                  // Baris nav item
                   Row(
                     children: [
                       _buildNavItem(0, LucideIcons.layoutDashboard, 'Dasbor', selectedIndex, ref),
@@ -99,7 +99,7 @@ class MainLayout extends ConsumerWidget {
   ) {
     final isSelected = index == selectedIndex;
     return Expanded(
-      flex: isSelected ? 17 : 11,
+      flex: isSelected ? 20 : 10,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () {
@@ -129,7 +129,7 @@ class MainLayout extends ConsumerWidget {
                           label,
                           style: const TextStyle(
                             color: AppColors.textPrimary,
-                            fontSize: 12,
+                            fontSize: 11,
                             fontWeight: FontWeight.bold,
                             fontFamily: 'Outfit',
                           ),

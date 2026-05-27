@@ -12,6 +12,9 @@ import '../../../core/constants/colors.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/providers/privacy_provider.dart';
 import '../../../core/providers/security_provider.dart';
+import '../../../core/providers/budget_settings_provider.dart';
+import '../../../core/providers/haptic_provider.dart';
+import '../../../core/utils/haptics.dart';
 import '../../../core/services/notification_service.dart';
 import 'pin_setup_screen.dart';
 import '../providers/auth_provider.dart';
@@ -44,6 +47,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   String _fcmInitStatus = 'Belum diperiksa';
   String _fcmPermissionStatus = 'Belum diperiksa';
   String _fcmToken = '';
+  bool _isBudgetAlertExpanded = false;
 
   @override
   void initState() {
@@ -192,6 +196,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget build(BuildContext context) {
     final hideBalance = ref.watch(privacyProvider);
     final securityState = ref.watch(securityProvider);
+    final activeThresholds = ref.watch(budgetSettingsProvider);
+    final hapticEnabled = ref.watch(hapticProvider);
     final versionAsync = ref.watch(_appVersionSettingsProvider);
 
     return Scaffold(
@@ -220,47 +226,103 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ).animate().fadeIn(duration: 300.ms),
             const SizedBox(height: 8),
             AppCard(
-              child: Row(
+              padding: EdgeInsets.zero,
+              child: Column(
                 children: [
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceAlt,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(LucideIcons.eyeOff, color: AppColors.textSecondary, size: 16),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text(
-                          'Sembunyikan Saldo',
-                          style: TextStyle(
-                            color: AppColors.textPrimary,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceAlt,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(LucideIcons.eyeOff, color: AppColors.textSecondary, size: 16),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: const [
+                              Text(
+                                'Sembunyikan Saldo',
+                                style: TextStyle(
+                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              SizedBox(height: 2),
+                              Text(
+                                'Masking nominal saldo di semua halaman',
+                                style: TextStyle(
+                                  color: AppColors.textMuted,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        SizedBox(height: 2),
-                        Text(
-                          'Masking nominal saldo di semua halaman',
-                          style: TextStyle(
-                            color: AppColors.textMuted,
-                            fontSize: 11,
-                          ),
+                        Switch.adaptive(
+                          value: hideBalance,
+                          activeColor: AppColors.primary,
+                          onChanged: (val) {
+                            ref.read(privacyProvider.notifier).toggleHideBalance();
+                          },
                         ),
                       ],
                     ),
                   ),
-                  Switch.adaptive(
-                    value: hideBalance,
-                    activeColor: AppColors.primary,
-                    onChanged: (val) {
-                      ref.read(privacyProvider.notifier).toggleHideBalance();
-                    },
+                  const Divider(color: AppColors.border, height: 1, thickness: 0.5),
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceAlt,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(LucideIcons.smartphone, color: AppColors.textSecondary, size: 16),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: const [
+                              Text(
+                                'Getaran Taktil (Haptic)',
+                                style: TextStyle(
+                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              SizedBox(height: 2),
+                              Text(
+                                'Efek getaran ringan saat menekan tombol & interaksi',
+                                style: TextStyle(
+                                  color: AppColors.textMuted,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Switch.adaptive(
+                          value: hapticEnabled,
+                          activeColor: AppColors.primary,
+                          onChanged: (val) {
+                            ref.read(hapticProvider.notifier).toggleHaptic();
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -333,6 +395,138 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ),
             ).animate().fadeIn(delay: 200.ms, duration: 350.ms).slideY(begin: 0.05, end: 0, duration: 350.ms),
+
+            const SizedBox(height: 28),
+
+            // ── NOTIFIKASI ALARM ANGGARAN ──
+            const Text(
+              'NOTIFIKASI ALARM ANGGARAN',
+              style: TextStyle(
+                color: AppColors.textMuted,
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.2,
+              ),
+            ).animate().fadeIn(delay: 220.ms, duration: 300.ms),
+            const SizedBox(height: 8),
+            AppCard(
+              padding: EdgeInsets.zero,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  InkWell(
+                    onTap: () {
+                      AppHaptics.lightImpact();
+                      setState(() {
+                        _isBudgetAlertExpanded = !_isBudgetAlertExpanded;
+                      });
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: AppColors.surfaceAlt,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(LucideIcons.bellRing, color: AppColors.textSecondary, size: 16),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: const [
+                                Text(
+                                  'Peringatan Batas Anggaran',
+                                  style: TextStyle(
+                                    color: AppColors.textPrimary,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                SizedBox(height: 2),
+                                Text(
+                                  'Picu alarm saat pengeluaran melampaui batas terpilih',
+                                  style: TextStyle(
+                                    color: AppColors.textMuted,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(
+                            _isBudgetAlertExpanded ? LucideIcons.chevronUp : LucideIcons.chevronDown,
+                            size: 18,
+                            color: AppColors.textMuted,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  
+                  if (_isBudgetAlertExpanded) ...[
+                    const Divider(color: AppColors.border, height: 1, thickness: 0.5),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [50, 70, 90].map((tVal) {
+                          final isSelected = activeThresholds.contains(tVal);
+                          return InkWell(
+                            onTap: () {
+                              AppHaptics.lightImpact();
+                              ref.read(budgetSettingsProvider.notifier).toggleThreshold(tVal);
+                            },
+                            borderRadius: BorderRadius.circular(8),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 6.0),
+                              child: Row(
+                                children: [
+                                  AnimatedContainer(
+                                    duration: const Duration(milliseconds: 150),
+                                    width: 20,
+                                    height: 20,
+                                    decoration: BoxDecoration(
+                                      color: isSelected ? AppColors.primary : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                        color: isSelected ? AppColors.primary : AppColors.border,
+                                        width: 2,
+                                      ),
+                                    ),
+                                    child: isSelected
+                                        ? const Icon(
+                                            Icons.check_rounded,
+                                            size: 14,
+                                            color: Colors.white,
+                                          )
+                                        : null,
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Text(
+                                    'Peringatan saat terpakai $tVal%',
+                                    style: const TextStyle(
+                                      color: AppColors.textPrimary,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ).animate().fadeIn(delay: 240.ms, duration: 350.ms).slideY(begin: 0.05, end: 0, duration: 350.ms),
 
             const SizedBox(height: 28),
 

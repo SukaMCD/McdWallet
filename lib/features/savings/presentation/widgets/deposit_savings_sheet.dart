@@ -309,16 +309,13 @@ class _DepositSavingsSheetState extends ConsumerState<DepositSavingsSheet> {
                                 ),
                               ),
                               const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  isIdr
-                                      ? '${wallet.name} (${Formatters.formatCurrencyWithCode(wallet.balance, wallet.currencyCode)})'
-                                      : '${wallet.name} (Sedang dalam pengembangan)',
-                                  style: TextStyle(
-                                    color: isIdr ? AppColors.textPrimary : AppColors.textMuted.withOpacity(0.5),
-                                    fontSize: 14,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
+                              Text(
+                                isIdr
+                                    ? '${wallet.name} (${Formatters.formatCurrencyWithCode(wallet.balance, wallet.currencyCode)})'
+                                    : '${wallet.name} (Sedang dalam pengembangan)',
+                                style: TextStyle(
+                                  color: isIdr ? AppColors.textPrimary : AppColors.textMuted.withOpacity(0.5),
+                                  fontSize: 14,
                                 ),
                               ),
                             ],

@@ -15,6 +15,9 @@ import 'core/services/notification_service.dart';
 import 'features/auth/presentation/pin_setup_screen.dart';
 import 'features/auth/presentation/pin_entry_screen.dart';
 import 'core/services/error_logger_service.dart';
+import 'core/providers/haptic_provider.dart';
+import 'core/utils/haptics.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -71,7 +74,11 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Sinkronisasi status getaran taktil global
+    AppHaptics.enabled = ref.watch(hapticProvider);
+
     final authState = ref.watch(authStateProvider);
+
 
     return MaterialApp(
       title: 'McdWallet',

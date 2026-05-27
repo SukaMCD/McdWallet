@@ -9,6 +9,7 @@ import '../../../core/providers/supabase_provider.dart';
 import '../../../core/services/notification_service.dart';
 import '../../budgets/providers/budgets_provider.dart';
 import '../../forex/providers/forex_provider.dart';
+import '../../../core/providers/budget_settings_provider.dart';
 
 // Provider untuk TransactionsService
 final transactionsServiceProvider = Provider<TransactionsService>((ref) {
@@ -403,8 +404,11 @@ class TransactionsNotifier extends StateNotifier<AsyncValue<List<TransactionMode
             }
           }
 
-          // Jika pengeluaran melebihi limit anggaran
-          if (spent >= budget.amountLimit) {
+          final double txAmount = transaction.amountInIdr ?? transaction.amount;
+          final double previousSpent = spent - txAmount;
+
+          // 1. Cek Batas 100% (Notifikasi FIX/Wajib - Selalu muncul jika melewati batas)
+          if (spent >= budget.amountLimit && previousSpent < budget.amountLimit) {
             // Kasus 1: Anggaran Kategori Spesifik
             if (budget.categoryId != null && budget.categoryId == transaction.categoryId) {
               final categoryName = budget.category?.name ?? 'Kategori';
@@ -421,6 +425,36 @@ class TransactionsNotifier extends StateNotifier<AsyncValue<List<TransactionMode
                 limitAmount: budget.amountLimit,
                 spentAmount: spent,
               );
+            }
+          }
+
+          // 2. Cek Ambang Batas Peringatan Kustom (50%, 70%, 90%) yang Aktif di Pengaturan
+          final activeThresholds = _ref.read(budgetSettingsProvider);
+          for (final thresholdVal in activeThresholds) {
+            final double limitThresholdAmount = budget.amountLimit * (thresholdVal / 100);
+            if (spent >= limitThresholdAmount && previousSpent < limitThresholdAmount) {
+              // Hanya trigger peringatan jika pengeluaran belum mencapai 100%
+              if (spent < budget.amountLimit) {
+                // Kasus 1: Anggaran Kategori Spesifik
+                if (budget.categoryId != null && budget.categoryId == transaction.categoryId) {
+                  final categoryName = budget.category?.name ?? 'Kategori';
+                  NotificationService().showBudgetWarningNotification(
+                    categoryName: categoryName,
+                    thresholdPercentage: thresholdVal,
+                    limitAmount: budget.amountLimit,
+                    spentAmount: spent,
+                  );
+                }
+                // Kasus 2: Anggaran Global (category_id null)
+                else if (budget.categoryId == null) {
+                  NotificationService().showBudgetWarningNotification(
+                    categoryName: 'Anggaran Global',
+                    thresholdPercentage: thresholdVal,
+                    limitAmount: budget.amountLimit,
+                    spentAmount: spent,
+                  );
+                }
+              }
             }
           }
         }
