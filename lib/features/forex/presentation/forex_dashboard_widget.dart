@@ -12,7 +12,7 @@ import '../providers/forex_provider.dart';
 import 'currency_selector_sheet.dart';
 import 'forex_converter_sheet.dart';
 
-/// Sebuah widget dashboard premium bernuansa Slate-Emerald untuk memantau
+/// Sebuah widget dashboard premium bernuansa Slate-Charcoal untuk memantau
 /// kurs mata uang asing secara real-time dengan caching cerdas & manual refresh cooldown.
 class ForexDashboardWidget extends ConsumerStatefulWidget {
   const ForexDashboardWidget({Key? key}) : super(key: key);

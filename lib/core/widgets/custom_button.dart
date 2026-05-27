@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../constants/colors.dart';
+import '../utils/haptics.dart';
 
 class CustomButton extends StatelessWidget {
   final String text;
@@ -75,7 +76,7 @@ class CustomButton extends StatelessWidget {
         onPressed: isLoading
             ? null
             : () {
-                HapticFeedback.lightImpact();
+                AppHaptics.lightImpact();
                 onPressed?.call();
               },
         style: style,
@@ -93,7 +94,7 @@ class CustomButton extends StatelessWidget {
         onPressed: isLoading
             ? null
             : () {
-                HapticFeedback.lightImpact();
+                AppHaptics.lightImpact();
                 onPressed?.call();
               },
         style: style,

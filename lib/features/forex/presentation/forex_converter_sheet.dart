@@ -7,7 +7,7 @@ import '../../../../core/constants/colors.dart';
 import '../../../../core/utils/formatters.dart';
 import '../domain/forex_rate_model.dart';
 
-/// Sebuah modal bottom sheet konverter valas premium bernuansa Slate-Emerald
+/// Sebuah modal bottom sheet konverter valas premium bernuansa Slate-Charcoal
 /// yang interaktif, reaktif, dan keyboard-safe.
 class ForexConverterSheet extends StatefulWidget {
   final ForexRateModel rate;

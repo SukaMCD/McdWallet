@@ -52,3 +52,14 @@ Aplikasi McdWallet menyediakan berbagai fungsionalitas utama untuk mendukung pen
 *   **Proteksi Cooldown Refresh Manual**: Dilindungi oleh batas waktu tunggu (*cooldown*) 5 menit setiap kali pengguna melakukan gestur *pull-to-refresh* pada dasbor utama untuk menjaga efisiensi lalu lintas data dan mencegah overload server.
 *   **Seleksi Favorit & Pencarian Dinamis**: Lembar modal (bottom sheet) reaktif dengan kolom pencarian cepat untuk mencari, memilih, dan mengelola hingga 5 mata uang asing favorit secara fleksibel.
 *   **Visualisasi Trend & Konversi Cerdas**: Setiap kartu dilengkapi panah indikator trend kenaikan/penurunan harga kurs reaktif dan modul formatting pintar (pembulatan otomatis ke bilangan bulat untuk nominal di atas Rp100 agar menghemat ruang visual).
+
+### 9. Klasifikasi Kategori Transaksi Cerdas (AI Smart Auto-Categorization)
+*   **Hibrida Cerdas Lokal & Cloud**: Mengintegrasikan analisis hibrida cepat: pencocokan lokal dengan engine regex yang dinamis, didukung panggilan asinkron ke Groq Cloud API (`llama-3.3-70b-versatile`) menggunakan model LLM yang sangat cepat untuk pemahaman kalimat semantik yang deterministik (`temperature: 0.1`, `json_object`).
+*   **Debouncer Waktu 800ms**: Memasang debouncer 800ms pada masukan teks catatan/deskripsi transaksi agar mencegah banjir request API saat pengguna masih aktif mengetik.
+*   **Akurasi Lokal Tanpa Kuota**: Secara instan memprediksi kategori transaksi offline menggunakan pustaka kata kunci yang selaras dengan daftar kategori pengguna (misal: "makan", "bakso", "kopi" -> Makanan & Minuman; "grab", "gojek", "bensin" -> Transportasi).
+*   **Smart Manual Override**: Membatalkan status AI secara halus jika pengguna memutuskan untuk mengubah atau memilih kategori lain secara manual.
+*   **Visual Status Cerdas Minimalis**: Menampilkan status visual yang menawan *"Kategori dipilih otomatis oleh AI"* bernuansa Charcoal minimalis di bawah dropdown ketika kategori diset otomatis oleh AI.
+
+### 10. Asisten Keuangan Pintar Interaktif (AI Financial Advisor - McdAI)
+*   **Akses Data Finansial Komprehensif**: Mengintegrasikan LLaMA 3.3 (70B) melalui Groq API yang secara cerdas menganalisis seluruh kondisi keuangan pengguna secara real-time (total kekayaan bersih, saldo aktif per dompet, batas anggaran, target tabungan, dan 15 transaksi mutasi terakhir) untuk memberikan rekomendasi finansial taktis yang personal.
+*   **Pembersihan Sesi Aman**: Menghapus riwayat percakapan secara otomatis dari memori lokal begitu pengguna keluar dari layar obrolan untuk menjamin keamanan privasi data keuangan pengguna.

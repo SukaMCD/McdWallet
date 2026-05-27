@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../../../core/widgets/shimmer_loading.dart';
 import '../../../core/constants/colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -17,6 +18,7 @@ import 'widgets/expense_pie_chart.dart';
 import 'widgets/export_sheet.dart';
 import '../../forex/presentation/forex_dashboard_widget.dart';
 import '../../forex/providers/forex_provider.dart';
+import '../../ai_advisor/presentation/ai_advisor_screen.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -78,6 +80,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ),
         ),
       ),
+      // ─── FAB McdAI ───
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          HapticFeedback.lightImpact();
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              fullscreenDialog: true,
+              builder: (_) => const AiAdvisorScreen(),
+            ),
+          );
+        },
+        child: const Icon(LucideIcons.sparkles, color: Colors.white, size: 22),
+      ),
       body: RefreshIndicator(
         color: AppColors.primary,
         backgroundColor: AppColors.surface,
@@ -122,6 +137,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
               // ─── Recent Transactions ───
               _buildRecentTransactions(transactionsAsync),
+
+              // Spacer agar konten tidak tertutup FAB
+              const SizedBox(height: 80),
             ],
           ),
         ),
@@ -513,16 +531,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
         // Content
         transactionsAsync.when(
-          loading: () => Container(
+          loading: () => ShimmerSkeleton.card(
             height: 120,
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: const Center(
-              child: CircularProgressIndicator(
-                  color: AppColors.primary, strokeWidth: 2),
-            ),
+            borderRadius: 14,
           ),
           error: (_, __) => const SizedBox.shrink(),
           data: (txs) {
@@ -811,9 +822,27 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         const SizedBox(height: 14),
 
         transactionsAsync.when(
-          loading: () => const Center(
-            child: CircularProgressIndicator(
-                color: AppColors.primary, strokeWidth: 2),
+          loading: () => Column(
+            children: List.generate(3, (index) => Padding(
+              padding: const EdgeInsets.only(bottom: 12.0),
+              child: Row(
+                children: [
+                  ShimmerSkeleton.circle(size: 38),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        ShimmerSkeleton(width: 100, height: 12, borderRadius: 4),
+                        SizedBox(height: 6),
+                        ShimmerSkeleton(width: 60, height: 8, borderRadius: 4),
+                      ],
+                    ),
+                  ),
+                  const ShimmerSkeleton(width: 60, height: 12, borderRadius: 4),
+                ],
+              ),
+            )),
           ),
           error: (err, _) =>
               Text('Error: $err',

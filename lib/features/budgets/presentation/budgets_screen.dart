@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import '../../../core/widgets/shimmer_loading.dart';
 import '../../../core/constants/colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/custom_button.dart';
@@ -245,6 +247,7 @@ class BudgetsScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
+          HapticFeedback.lightImpact();
           if (activeTab == 'budgets') {
             _showAddBudgetSheet(context);
           } else {
@@ -262,7 +265,12 @@ class BudgetsScreen extends ConsumerWidget {
     AsyncValue<List<BudgetProgress>> budgetsProgressAsync,
   ) {
     return budgetsProgressAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+      loading: () => ListView.separated(
+        padding: const EdgeInsets.fromLTRB(20, 4, 20, 80),
+        itemCount: 3,
+        separatorBuilder: (_, __) => const SizedBox(height: 16),
+        itemBuilder: (_, __) => ShimmerSkeleton.card(height: 120),
+      ),
       error: (err, _) => Center(
         child: Text(
           'Gagal memuat anggaran: $err',
@@ -319,7 +327,7 @@ class BudgetsScreen extends ConsumerWidget {
             if (budget.period == 'weekly') periodLabel = 'Mingguan';
             if (budget.period == 'yearly') periodLabel = 'Tahunan';
 
-            Color progressColor = AppColors.primary; // Emerald
+            Color progressColor = AppColors.primary; // Charcoal
             if (progress.percentage >= 0.8 && progress.percentage < 1.0) {
               progressColor = const Color(0xFFF59E0B); // Amber Yellow
             } else if (progress.percentage >= 1.0) {
@@ -550,7 +558,12 @@ class BudgetsScreen extends ConsumerWidget {
         ],
         Expanded(
           child: savingsAsync.when(
-            loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+            loading: () => ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              itemCount: 3,
+              separatorBuilder: (_, __) => const SizedBox(height: 16),
+              itemBuilder: (_, __) => ShimmerSkeleton.card(height: 110),
+            ),
             error: (err, _) => Center(
               child: Text(
                 'Gagal memuat tabungan: $err',

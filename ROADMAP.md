@@ -33,6 +33,15 @@ Daftar perbaikan teknis pada modul yang sudah ada untuk menjamin skalabilitas ap
     *   Memicu layar PIN secara otomatis saat aplikasi kembali ke status `resumed` apabila durasi jeda telah melebihi 3 menit.
 *   **Kompleksitas**: Sedang (Medium)
 
+### [x] Sakelar Getaran Taktil Global (*Global Haptic Feedback Toggle*)
+*   **Status**: **SELESAI (v2.5.0)**
+*   **Deskripsi**: Memberikan kebebasan penuh bagi pengguna untuk mengaktifkan atau menonaktifkan getaran fisik taktil mikro di seluruh aplikasi demi efisiensi baterai atau kenyamanan personal.
+*   **Hasil Implementasi**:
+    *   **Wrapper Getaran Terpusat (AppHaptics)**: Membuat class pembungkus `AppHaptics` yang menangani pemicuan getaran taktil mikro secara bersyarat dan terpusat.
+    *   **Sinkronisasi Riverpod & SharedPreferences**: Mengintegrasikan `hapticProvider` berbasis `StateNotifier` yang menyimpan data secara persisten di memori lokal agar setting bertahan lama meskipun aplikasi ditutup.
+    *   **Switch Switch.adaptive Premium**: Menyediakan sakelar toggle yang harmonis dengan gaya UI Off-white/Charcoal McdWallet di halaman Pengaturan (*Settings*) di bawah tab Privasi & Tampilan.
+*   **Kompleksitas**: Rendah (Low)
+
 ---
 
 ## 2. Rencana Fitur Baru (*New Features Backlog*)
@@ -105,7 +114,8 @@ Daftar fungsionalitas baru untuk memperluas jangkauan penggunaan aplikasi McdWal
     *   **Antarmuka Keyboard-Safe**: Lembar modal bottom sheet yang didesain secara adaptif dengan `AnimatedPadding` dan `SingleChildScrollView` untuk memastikan 0% bug keyboard overlap.
 *   **Kompleksitas**: Rendah (Low)
 
-### [ ] Manajemen Dompet Multi-Mata Uang (*Multi-Currency Wallet*)
+### [/] Manajemen Dompet Multi-Mata Uang (*Multi-Currency Wallet*)
+*   **Status**: **SEDANG DALAM PENGEMBANGAN (UI & pilihan valas dinonaktifkan sementara untuk proteksi stabilitas saldo)**
 *   **Deskripsi**: Memperluas sistem multi-dompet aplikasi agar mendukung saldo dalam mata uang asing (misalnya saldo USD di Wise, cash SGD, dll.).
 *   **Strategi Implementasi**:
     *   Menambahkan kolom `currency_code` (default 'IDR') pada skema tabel dompet di basis data Supabase.
@@ -119,20 +129,34 @@ Daftar fungsionalitas baru untuk memperluas jangkauan penggunaan aplikasi McdWal
     *   Mengecek kondisi target harga saat proses auto-sync latar belakang berjalan setiap 1 jam, dan memicu notifikasi lokal reaktif di bilah status bar jika target terlampaui.
 *   **Kompleksitas**: Sedang (Medium)
 
-### [ ] Asisten Keuangan Pintar Interaktif (*AI Financial Advisor - MCD AI*)
-*   **Deskripsi**: Fasilitas obrolan interaktif (*Chatbot chatbot*) premium glassmorphic di mana pengguna bisa berdiskusi langsung mengenai kondisi kesehatan keuangannya dengan AI yang ditenagai oleh Gemini API.
-*   **Strategi Implementasi**:
-    *   Membuat modul antarmuka obrolan premium dengan transisi animasi halus di dalam tab menu baru.
-    *   Secara aman mengirimkan riwayat transaksi bulanan terenkripsi (tanpa data sensitif) ke Gemini API sebagai konteks dasar analisis keuangan.
-    *   AI dilatih khusus untuk memberikan saran penghematan taktis personal, ramalan pengeluaran kategori boros, serta menyusun rencana menabung impian secara interaktif.
+### [x] Asisten Keuangan Pintar Interaktif (*AI Financial Advisor - McdAI*)
+*   **Status**: **SELESAI (v2.3.0)**
+*   **Deskripsi**: Fasilitas obrolan interaktif (*chatbot*) premium minimalis Charcoal/Off-white di mana pengguna bisa berdiskusi langsung mengenai kondisi kesehatan keuangannya dengan McdAI yang ditenagai oleh Groq API (LLaMA 3.3 70B).
+*   **Hasil Implementasi**:
+    *   **Akses Anggaran & Tabungan Real-Time**: AI secara cerdas dibekali konteks data keuangan pengguna secara lengkap (total kekayaan bersih, saldo aktif per dompet, batas anggaran aktif, target tabungan, dan 15 transaksi mutasi terakhir) untuk analisis finansial yang komprehensif.
+    *   **Dashboard FAB Integration**: Akses AI diletakkan pada Floating Action Button melambung dengan ikon sparkles minimalis di layar dasbor utama, selaras dengan FAB anggaran.
+    *   **Desain Premium Black/Off-white & Centered Title**: Antarmuka lembar obrolan minimalis dengan skema warna Charcoal & Off-white premium, bilah judul tengah, dan tombol navigasi kembali berupa ikon panah kiri `<` minimalis.
+    *   **AI Warning Disclaimer**: Penambahan pesan peringatan *"McdAI dapat membuat kesalahan. Harap verifikasi informasi penting."* di bawah kolom input obrolan demi akurasi informasi.
+    *   **Pembersihan Sesi Otomatis**: Riwayat chat otomatis dibersihkan saat screen ditutup untuk keamanan privasi data keuangan pengguna.
 *   **Kompleksitas**: Sedang (Medium)
 
-### [ ] Klasifikasi Kategori Transaksi Cerdas (*AI Smart Auto-Categorization*)
+### [x] Klasifikasi Kategori Transaksi Cerdas (*AI Smart Auto-Categorization*)
+*   **Status**: **SELESAI (v1.0.0)**
 *   **Deskripsi**: Pengisian otomatis kategori transaksi secara instan berbasis AI semantik saat pengguna mengetik deskripsi transaksi secara manual.
-*   **Strategi Implementasi**:
-    *   Membaca input teks deskripsi transaksi secara real-time saat diketik oleh user (misal: *"beli kopi starbucks"* atau *"bayar grab ke stasiun"*).
-    *   Menggunakan model NLP ringan / Gemini API untuk mengekstrak makna semantik kalimat secara instan.
-    *   Memilih secara otomatis kategori yang paling cocok (seperti makanan/minuman atau transportasi) di dropdown transaksi disertai micro-animation pil kartu rekomendasi yang menawan di bawah field input.
+*   **Hasil Implementasi**:
+    *   **Hibrida Cerdas**: Mengintegrasikan analisis hibrida cepat: pencocokan lokal dengan engine regex yang dinamis, didukung panggilan asinkron ke Groq Cloud API (llama-3.3-70b-versatile) untuk pemahaman kalimat semantik yang deterministik (temperature 0.1, response format JSON).
+    *   **Debouncer Waktu**: Memasang debouncer 800ms pada masukan teks catatan/deskripsi transaksi agar mencegah banjir request API saat pengguna masih aktif mengetik.
+    *   **Premium Visual Sparkles**: Menambahkan pil lencana visual Charcoal Sparkles premium ("AI") di dekat judul kategori serta stempel status informatif ("Kategori dipilih otomatis oleh AI") di bawah dropdown picker kategori.
+    *   **Smart Manual Override**: Membatalkan status AI secara halus jika pengguna memutuskan untuk mengubah atau memilih kategori lain secara manual.
+*   **Kompleksitas**: Sedang (Medium)
+
+### [x] Kustomisasi Ambang Batas Alarm Anggaran (*Custom Budget Alert Threshold*)
+*   **Status**: **SELESAI (v2.4.0)**
+*   **Deskripsi**: Memberikan fleksibilitas penuh bagi pengguna untuk mengatur sendiri pada persentase berapa alarm/notifikasi limit anggaran bulanan mulai dipicu dengan sistem pemilihan multi-select (bisa memilih lebih dari satu dari opsi 50%, 70%, dan 90%).
+*   **Hasil Implementasi**:
+    *   **Pill Selector Multi-Select**: Menampilkan 3 tombol pil persentase reaktif (50%, 70%, 90%) di halaman Pengaturan (*Settings*) dengan getaran haptic taktil dan penyimpanan persentase dinamis terintegrasi di *SharedPreferences* lokal.
+    *   **Logic Pencegah Duplikasi Notifikasi**: Algoritma reaktif yang membandingkan saldo mutasi saat ini vs sebelum transaksi (`previousSpent`) untuk mendeteksi momentum penembusan ambang batas secara presisi agar tidak memicu notifikasi berulang-ulang.
+    *   **Notifikasi Pengeluaran Maksimal 100% Permanen**: Notifikasi saat pengeluaran melampaui batas anggaran (>= 100%) didesain selalu aktif (*fixed/always on*) demi menjaga keamanan dan perlindungan finansial pengguna tanpa dipengaruhi opsi setting warning yang dimatikan.
 *   **Kompleksitas**: Sedang (Medium)
 
 ---

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:intl/intl.dart';
@@ -240,7 +241,10 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddWalletSheet(context),
+        onPressed: () {
+          HapticFeedback.lightImpact();
+          _showAddWalletSheet(context);
+        },
         child: const Icon(LucideIcons.plus, color: Colors.white),
       ),
     );
@@ -419,14 +423,12 @@ class _AddWalletBottomSheetState extends ConsumerState<_AddWalletBottomSheet> {
                             children: [
                               Text(flag, style: TextStyle(fontSize: 18, color: isIdr ? null : AppColors.textMuted.withOpacity(0.5))),
                               const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  isIdr ? '$value - $name' : '$value - $name (Sedang dalam pengembangan)',
-                                  style: TextStyle(
-                                    color: isIdr ? AppColors.textPrimary : AppColors.textMuted.withOpacity(0.5),
-                                    fontSize: 14,
-                                    fontWeight: isIdr ? FontWeight.w600 : FontWeight.normal,
-                                  ),
+                              Text(
+                                isIdr ? '$value - $name' : '$value - $name (Sedang dalam pengembangan)',
+                                style: TextStyle(
+                                  color: isIdr ? AppColors.textPrimary : AppColors.textMuted.withOpacity(0.5),
+                                  fontSize: 14,
+                                  fontWeight: isIdr ? FontWeight.w600 : FontWeight.normal,
                                 ),
                               ),
                             ],

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -20,6 +21,7 @@ import '../../forex/domain/forex_rate_model.dart';
 import '../../forex/providers/forex_provider.dart';
 import 'widgets/manage_categories_sheet.dart';
 import 'widgets/ocr_scanner_sheet.dart';
+import '../services/ai_category_service.dart';
 
 class TransactionInputScreen extends ConsumerStatefulWidget {
   final String? initialType; // 'expense', 'income', or 'transfer'
@@ -52,6 +54,12 @@ class _TransactionInputScreenState extends ConsumerState<TransactionInputScreen>
   final ImagePicker _picker = ImagePicker();
   bool _isSaving = false;
 
+  // AI Categorization States
+  Timer? _debounceTimer;
+  bool _isAiCategorizing = false;
+  bool _isAiCategorized = false;
+  final _aiCategoryService = AiCategoryService();
+
   @override
   void initState() {
     super.initState();
@@ -82,6 +90,7 @@ class _TransactionInputScreenState extends ConsumerState<TransactionInputScreen>
     
     _tabController = TabController(length: 3, vsync: this, initialIndex: initialIndex);
     _tabController.addListener(_handleTabChange);
+    _descriptionController.addListener(_onDescriptionChanged);
   }
 
   void _handleTabChange() {
@@ -89,11 +98,69 @@ class _TransactionInputScreenState extends ConsumerState<TransactionInputScreen>
     setState(() {
       _selectedCategory = null;
       _adminFeeController.clear();
+      _isAiCategorized = false;
     });
+  }
+
+  void _onDescriptionChanged() {
+    if (_currentType == 'transfer') return;
+    
+    final desc = _descriptionController.text.trim();
+    if (desc.isEmpty) {
+      if (_isAiCategorized) {
+        setState(() {
+          _isAiCategorized = false;
+        });
+      }
+      return;
+    }
+    
+    if (_debounceTimer?.isActive ?? false) _debounceTimer!.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 800), () {
+      _runAiCategorization(desc);
+    });
+  }
+
+  Future<void> _runAiCategorization(String desc) async {
+    if (!mounted) return;
+    
+    final categories = ref.read(categoriesProvider).value ?? [];
+    final activeCategories = categories.where((c) => c.type == _currentType).toList();
+    
+    if (activeCategories.isEmpty) return;
+    
+    setState(() {
+      _isAiCategorizing = true;
+    });
+    
+    try {
+      final predicted = await _aiCategoryService.predictCategory(
+        description: desc,
+        availableCategories: activeCategories,
+        transactionType: _currentType,
+      );
+      
+      if (predicted != null && mounted) {
+        setState(() {
+          _selectedCategory = predicted;
+          _isAiCategorized = true;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error running AI categorization: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isAiCategorizing = false;
+        });
+      }
+    }
   }
 
   @override
   void dispose() {
+    _descriptionController.removeListener(_onDescriptionChanged);
+    _debounceTimer?.cancel();
     _tabController.removeListener(_handleTabChange);
     _tabController.dispose();
     _amountController.dispose();
@@ -525,6 +592,7 @@ class _TransactionInputScreenState extends ConsumerState<TransactionInputScreen>
   Widget build(BuildContext context) {
     final walletsAsync = ref.watch(walletsProvider);
     final categoriesAsync = ref.watch(categoriesProvider);
+    final rates = ref.watch(forexRatesProvider).value ?? [];
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -753,7 +821,6 @@ class _TransactionInputScreenState extends ConsumerState<TransactionInputScreen>
                               AnimatedBuilder(
                                 animation: _amountController,
                                 builder: (context, _) {
-                                  final rates = ref.watch(forexRatesProvider).value ?? [];
                                   final rate = _getConversionRate(_selectedWallet!.currencyCode, rates);
                                   
                                   final textVal = _amountController.text.replaceAll('.', '').replaceAll(',', '.').trim();
@@ -810,16 +877,13 @@ class _TransactionInputScreenState extends ConsumerState<TransactionInputScreen>
                                         ),
                                       ),
                                       const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Text(
-                                          isIdr
-                                              ? '${wallet.name} (${_formatCurrencyWithSymbol(wallet.balance, wallet.currencyCode)})'
-                                              : '${wallet.name} (Sedang dalam pengembangan)',
-                                          style: TextStyle(
-                                            color: isIdr ? AppColors.textPrimary : AppColors.textMuted.withOpacity(0.5),
-                                            fontSize: 14,
-                                          ),
-                                          overflow: TextOverflow.ellipsis,
+                                      Text(
+                                        isIdr
+                                            ? '${wallet.name} (${_formatCurrencyWithSymbol(wallet.balance, wallet.currencyCode)})'
+                                            : '${wallet.name} (Sedang dalam pengembangan)',
+                                        style: TextStyle(
+                                          color: isIdr ? AppColors.textPrimary : AppColors.textMuted.withOpacity(0.5),
+                                          fontSize: 14,
                                         ),
                                       ),
                                     ],
@@ -877,16 +941,13 @@ class _TransactionInputScreenState extends ConsumerState<TransactionInputScreen>
                                           ),
                                         ),
                                         const SizedBox(width: 12),
-                                        Expanded(
-                                          child: Text(
-                                            isIdr
-                                                ? '${wallet.name} (${_formatCurrencyWithSymbol(wallet.balance, wallet.currencyCode)})'
-                                                : '${wallet.name} (Sedang dalam pengembangan)',
-                                            style: TextStyle(
-                                              color: isIdr ? AppColors.textPrimary : AppColors.textMuted.withOpacity(0.5),
-                                              fontSize: 14,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
+                                        Text(
+                                          isIdr
+                                              ? '${wallet.name} (${_formatCurrencyWithSymbol(wallet.balance, wallet.currencyCode)})'
+                                              : '${wallet.name} (Sedang dalam pengembangan)',
+                                          style: TextStyle(
+                                            color: isIdr ? AppColors.textPrimary : AppColors.textMuted.withOpacity(0.5),
+                                            fontSize: 14,
                                           ),
                                         ),
                                       ],
@@ -980,9 +1041,27 @@ class _TransactionInputScreenState extends ConsumerState<TransactionInputScreen>
                                 onChanged: (val) {
                                   setState(() {
                                     _selectedCategory = activeCategories.firstWhere((c) => c.id == val);
+                                    _isAiCategorized = false; // Reset AI status if changed manually
                                   });
                                 },
                               ),
+                              if (_isAiCategorized) ...[
+                                const SizedBox(height: 6),
+                                const Row(
+                                  children: [
+                                    Icon(LucideIcons.sparkles, size: 12, color: const Color(0xFF10B981)),
+                                    SizedBox(width: 6),
+                                    Text(
+                                      'Kategori dipilih otomatis oleh AI',
+                                      style: TextStyle(
+                                        color: const Color(0xFF10B981),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                               const SizedBox(height: 20),
                             ],
 

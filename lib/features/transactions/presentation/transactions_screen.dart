@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import '../../../core/widgets/shimmer_loading.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/colors.dart';
 import '../../../core/utils/formatters.dart';
@@ -142,7 +144,28 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
           // TRANSACTIONS LIST
           Expanded(
             child: transactionsAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+              loading: () => ListView.separated(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                itemCount: 8,
+                separatorBuilder: (_, __) => const SizedBox(height: 16),
+                itemBuilder: (_, __) => Row(
+                  children: [
+                    ShimmerSkeleton.circle(size: 40),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          ShimmerSkeleton(width: 120, height: 14, borderRadius: 4),
+                          SizedBox(height: 6),
+                          ShimmerSkeleton(width: 80, height: 10, borderRadius: 4),
+                        ],
+                      ),
+                    ),
+                    const ShimmerSkeleton(width: 70, height: 14, borderRadius: 4),
+                  ],
+                ),
+              ),
               error: (err, _) => Center(
                 child: Text(
                   'Gagal memuat transaksi: $err',
@@ -275,6 +298,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
+          HapticFeedback.lightImpact();
           Navigator.push(
             context,
             MaterialPageRoute(

@@ -164,8 +164,22 @@ class NotificationService {
     required double spentAmount,
   }) async {
     final title = '⚠️ Batas Anggaran Terlampaui!';
-    final body = 'Pengeluaran untuk kategori "$categoryName" telah mencapai ${spentAmount.toStringAsFixed(0)} '
-        'dari batas maksimal ${limitAmount.toStringAsFixed(0)}.';
+    final body = 'Pengeluaran untuk kategori "$categoryName" telah mencapai Rp ${spentAmount.toStringAsFixed(0)} '
+        'dari batas maksimal Rp ${limitAmount.toStringAsFixed(0)}.';
+    
+    await showNotification(title, body);
+  }
+
+  // Tampilkan notifikasi peringatan ambang batas anggaran (50%, 70%, 90%)
+  Future<void> showBudgetWarningNotification({
+    required String categoryName,
+    required int thresholdPercentage,
+    required double limitAmount,
+    required double spentAmount,
+  }) async {
+    final title = '⚠️ Peringatan Anggaran ($thresholdPercentage%)';
+    final body = 'Pengeluaran untuk "$categoryName" telah terpakai Rp ${spentAmount.toStringAsFixed(0)} '
+        '($thresholdPercentage% dari batas maksimal Rp ${limitAmount.toStringAsFixed(0)}).';
     
     await showNotification(title, body);
   }
