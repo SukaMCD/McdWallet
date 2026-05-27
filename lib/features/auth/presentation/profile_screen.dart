@@ -10,6 +10,8 @@ import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/app_card.dart';
 import '../providers/auth_provider.dart';
 import 'settings_screen.dart';
+import 'widgets/feedback_sheet.dart';
+import '../../../core/utils/haptics.dart';
 
 final appVersionProvider = FutureProvider<String>((ref) async {
   try {
@@ -142,6 +144,24 @@ class ProfileScreen extends ConsumerWidget {
                                 data: (version) => version,
                                 orElse: () => 'v1.0.0',
                               ),
+                            ),
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 16),
+                              child: Divider(color: AppColors.border, height: 1, thickness: 0.5),
+                            ),
+                            _buildInfoRow(
+                              LucideIcons.messageSquare,
+                              'MASUKAN & BUG',
+                              'Kirim Bug / Saran',
+                              onTap: () {
+                                AppHaptics.lightImpact();
+                                showModalBottomSheet(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  backgroundColor: Colors.transparent,
+                                  builder: (context) => const FeedbackSheet(),
+                                );
+                              },
                             ),
                             const Padding(
                               padding: EdgeInsets.symmetric(vertical: 16),
